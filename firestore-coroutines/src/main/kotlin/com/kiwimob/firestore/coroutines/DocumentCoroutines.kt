@@ -16,7 +16,7 @@ suspend fun <T : Any> DocumentReference.await(parser: (documentSnapshot: Documen
     return suspendCancellableCoroutine { continuation ->
         get().addOnCompleteListener {
 
-            if (it.isSuccessful && it.result != null) {
+            if (it.isSuccessful && it.result != null && it.result!!.exists()) {
                 continuation.resume(parser(it.result!!))
             } else {
                 continuation.resumeWithException(it.exception ?: IllegalStateException())
