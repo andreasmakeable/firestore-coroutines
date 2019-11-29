@@ -9,14 +9,14 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 suspend fun <T : Any> CollectionReference.await(clazz: Class<T>): List<T> {
-    return await { documentSnapshot -> documentSnapshot.toObject(clazz) as T }
+    return await { documentSnapshot -> documentSnapshot.toObject(clazz) }
 }
 
-suspend fun <T : Any> CollectionReference.await(parser: (documentSnapshot: DocumentSnapshot) -> T): List<T> {
+suspend fun <T : Any> CollectionReference.await(parser: (documentSnapshot: DocumentSnapshot) -> T?): List<T> {
     return suspendCancellableCoroutine { continuation ->
         get().addOnCompleteListener {
             if (it.isSuccessful && it.result != null) {
-                val list = it.result!!.map(parser)
+                val list = it.result!!.mapNotNull(parser)
                 continuation.resume(list)
             } else {
                 continuation.resumeWithException(it.exception ?: IllegalStateException())
