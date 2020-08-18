@@ -3,9 +3,12 @@ package com.kiwimob.firestore.coroutines
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -73,7 +76,10 @@ fun <T : Any> Query.observe(parser: (documentSnapshot: DocumentSnapshot) -> T?):
         }
 
         val list = querySnapshot.mapNotNull(parser)
-        channel.sendBlocking(list)
+        CoroutineScope(Dispatchers.Main).launch {
+            channel.send(list)
+        }
+//        channel.sendBlocking(list)
     }
 
     return channel
